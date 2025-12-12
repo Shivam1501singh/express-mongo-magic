@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Sweet, User } from '@/types/sweet';
 import { useSweets } from '@/hooks/useSweets';
+import { useCart } from '@/hooks/useCart';
 import { SweetCard } from './SweetCard';
 import { SweetForm } from './SweetForm';
+import { Cart } from './Cart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -18,6 +20,7 @@ interface DashboardProps {
 
 export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const { sweets, addSweet, updateSweet, deleteSweet, lowStockSweets } = useSweets();
+  const cart = useCart();
   const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -59,6 +62,27 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
     toast({ title: 'Deleted', description: 'Sweet removed from inventory' });
   };
 
+  const handleCheckout = () => {
+    // Validate stock
+    for (const item of cart.items) {
+      const currentSweet = sweets.find(s => s.id === item.sweet.id);
+      if (!currentSweet || currentSweet.stock < item.quantity) {
+        toast({ 
+          title: 'Error', 
+          description: `Not enough stock for ${item.sweet.name}`,
+          variant: 'destructive'
+        });
+        return false;
+      }
+    }
+    // Reduce stock
+    for (const item of cart.items) {
+      updateSweet(item.sweet.id, { stock: sweets.find(s => s.id === item.sweet.id)!.stock - item.quantity });
+    }
+    cart.clearCart();
+    return true;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-amber-50">
       {/* Header */}
@@ -74,6 +98,14 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Cart 
+              items={cart.items}
+              total={cart.total}
+              itemCount={cart.itemCount}
+              onUpdateQuantity={cart.updateQuantity}
+              onRemove={cart.removeFromCart}
+              onCheckout={handleCheckout}
+            />
             <Badge variant="outline" className="capitalize">{user.role}</Badge>
             <Button variant="ghost" size="sm" onClick={onLogout}>
               <LogOut className="w-4 h-4 mr-1" /> Logout
@@ -159,6 +191,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
               sweet={sweet}
               onEdit={(s) => { setEditSweet(s); setFormOpen(true); }}
               onDelete={handleDelete}
+              onAddToCart={cart.addToCart}
               canEdit={isAdmin}
             />
           ))}
