@@ -1,14 +1,23 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useAuth } from '@/hooks/useAuth';
+import { LoginForm } from '@/components/LoginForm';
+import { Dashboard } from '@/components/Dashboard';
 
 const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+  const { user, loading, login, logout } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-50 to-amber-100">
+        <div className="animate-pulse text-lg">Loading...</div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (!user) {
+    return <LoginForm onLogin={login} />;
+  }
+
+  return <Dashboard user={user} onLogout={logout} />;
 };
 
 export default Index;
