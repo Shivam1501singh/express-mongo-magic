@@ -10,17 +10,39 @@ interface LoginFormProps {
 }
 
 export const LoginForm = ({ onLogin }: LoginFormProps) => {
+  const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const success = onLogin(username, password);
-    if (!success) {
-      setError('Invalid username or password');
+
+    if (isRegister) {
+      if (password !== confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+      // For now, registration just logs in (no real backend)
+      const success = onLogin(username, password);
+      if (!success) {
+        setError('Registration failed. Try different credentials.');
+      }
+    } else {
+      const success = onLogin(username, password);
+      if (!success) {
+        setError('Invalid username or password');
+      }
     }
+  };
+
+  const toggleMode = () => {
+    setIsRegister(!isRegister);
+    setError('');
+    setPassword('');
+    setConfirmPassword('');
   };
 
   return (
@@ -33,7 +55,9 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-amber-600 bg-clip-text text-transparent">
             Sweet Shop
           </CardTitle>
-          <CardDescription>Sign in to manage your inventory</CardDescription>
+          <CardDescription>
+            {isRegister ? 'Create a new account' : 'Sign in to manage your inventory'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -58,14 +82,40 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
                 required
               />
             </div>
+            {isRegister && (
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm password"
+                  required
+                />
+              </div>
+            )}
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full bg-gradient-to-r from-pink-500 to-amber-500 hover:from-pink-600 hover:to-amber-600">
-              Sign In
+              {isRegister ? 'Register' : 'Sign In'}
             </Button>
-            <p className="text-xs text-muted-foreground text-center mt-4">
+          </form>
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={toggleMode}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              {isRegister
+                ? 'Already have an account? Sign In'
+                : "Don't have an account? Register"}
+            </button>
+          </div>
+          {!isRegister && (
+            <p className="text-xs text-muted-foreground text-center mt-2">
               Demo: admin/admin123 or staff/staff123
             </p>
-          </form>
+          )}
         </CardContent>
       </Card>
     </div>
