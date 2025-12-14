@@ -13,7 +13,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -21,10 +21,6 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     setError('');
 
     if (isRegister) {
-      if (password !== confirmPassword) {
-        setError('Passwords do not match');
-        return;
-      }
       // For now, registration just logs in (no real backend)
       const success = onLogin(username, password);
       if (!success) {
@@ -42,7 +38,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
     setIsRegister(!isRegister);
     setError('');
     setPassword('');
-    setConfirmPassword('');
+    setName('');
   };
 
   return (
@@ -84,13 +80,12 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
             </div>
             {isRegister && (
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm password"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name"
                   required
                 />
               </div>
